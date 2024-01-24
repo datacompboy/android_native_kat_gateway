@@ -1,0 +1,16 @@
+<resources>
+    <attr name="text" format="string" />
+    <attr name="textSize" format="dimension" />
+    <attr name="textColor" format="color" />
+
+    <declare-styleable name="FeetDotView">
+        <attr name="text" />
+        <attr name="textSize" />
+        <attr name="textColor" />
+    </declare-styleable>
+
+    <declare-styleable name="ArrowView">
+        <attr name="textSize" />
+        <attr name="textColor" />
+    </declare-styleable>
+</resources>
