@@ -22,7 +22,7 @@ import com.datacompboy.nativekatgateway.events.KatDeviceDisconnectedEvent
 import com.datacompboy.nativekatgateway.events.KatSensorChangeEvent
 import com.datacompboy.nativekatgateway.events.KatSetLedEvent
 import com.datacompboy.nativekatgateway.events.USBDataSendEvent
-import com.datacompboy.nativekatgateway.events.USBReconnect
+import com.datacompboy.nativekatgateway.events.USBReconnectEvent
 import de.greenrobot.event.EventBus
 import kotlin.concurrent.Volatile
 
@@ -41,7 +41,7 @@ class KatGatewayService : Service() {
 
     protected var eventBus = EventBus.getDefault()
 
-    public val katWalk = KatWalkC2()
+    val katWalk = KatWalkC2()
 
     override fun onBind(intent: Intent): IBinder? {
         return null // Communication is done via eventBus
@@ -72,19 +72,29 @@ class KatGatewayService : Service() {
     }
 
     @ExperimentalStdlibApi
-    private inner class USBReaderThread: Thread() {
+    private inner class USBReaderThread : Thread() {
         @Volatile
         private var isStopped = false
         override fun run() {
             // Log.i("KatGatewayUsbThread", "Start USB Reader")
-            while(!isStopped) {
-                val buffer = ByteArray(usbReadEndpoint!!.getMaxPacketSize())
-                val status = usbConnectedDeviceConnection!!.bulkTransfer(usbReadEndpoint, buffer, buffer.size, 100)
+            while (!isStopped) {
+                val buffer = ByteArray(usbReadEndpoint!!.maxPacketSize)
+                val status = usbConnectedDeviceConnection!!.bulkTransfer(
+                    usbReadEndpoint,
+                    buffer,
+                    buffer.size,
+                    100
+                )
                 if (status > 0) {
                     // Log.i("KatGatewayUsbThread", "Recv1: " + status + " // " + buffer.toHexString(HexFormat.UpperCase) )
                     val result = katWalk.HandlePacket(buffer)
                     result.second?.let {
-                        val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(usbSendEndpoint, it, it.size, 100)
+                        val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(
+                            usbSendEndpoint,
+                            it,
+                            it.size,
+                            100
+                        )
                         // Log.i("KatGatewayUsbThread", "Send1: " + sendStatus + " // " + it.toHexString(HexFormat.UpperCase) )
                         // TODO: track success / send success to katWalk?
                     }
@@ -92,19 +102,32 @@ class KatGatewayService : Service() {
                         eventBus.post(KatSensorChangeEvent(result.first, katWalk))
                     }
                 } else
-                if (status == -1) // Stream communication not yet enabled?
-                {
-                    val status: Int = usbConnectedDeviceConnection!!.controlTransfer(0xA0, 0x01, 0x02, 0x00, buffer, buffer.size, 100)
-                    if (status > 0) {
-                        // Log.i("KatGatewayUsbThread", "Recv2: " + status + " // " + buffer.toHexString(HexFormat.UpperCase) )
-                        val result = katWalk.HandlePacket(buffer)
-                        result.second?.let {
-                            val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(usbSendEndpoint, it, it.size, 100)
+                    if (status == -1) // Stream communication not yet enabled?
+                    {
+                        val status: Int = usbConnectedDeviceConnection!!.controlTransfer(
+                            0xA0,
+                            0x01,
+                            0x02,
+                            0x00,
+                            buffer,
+                            buffer.size,
+                            100
+                        )
+                        if (status > 0) {
+                            // Log.i("KatGatewayUsbThread", "Recv2: " + status + " // " + buffer.toHexString(HexFormat.UpperCase) )
+                            val result = katWalk.HandlePacket(buffer)
+                            result.second?.let {
+                                val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(
+                                    usbSendEndpoint,
+                                    it,
+                                    it.size,
+                                    100
+                                )
 //                             Log.i("KatGatewayUsbThread", "Send2: " + sendStatus + " // " + it.toHexString(HexFormat.UpperCase) )
-                            // TODO: track success / send success to katWalk?
+                                // TODO: track success / send success to katWalk?
+                            }
                         }
                     }
-                }
             }
         }
 
@@ -113,7 +136,7 @@ class KatGatewayService : Service() {
         }
     }
 
-    private final val usbPermissionReceiver = object : BroadcastReceiver() {
+    private val usbPermissionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             val action = intent.action
             if (ACTION_USB_PERMISSION == action) {
@@ -128,21 +151,21 @@ class KatGatewayService : Service() {
         }
     }
 
-    public fun onEventMainThread(event: KatSetLedEvent) {
+    fun onEventMainThread(event: KatSetLedEvent) {
         katWalk.SetLEDLevel(event.level)
     }
 
 
     @Suppress("UNUSED_PARAMETER")
-    public fun onEventMainThread(event: USBReconnect) {
+    fun onEventMainThread(event: USBReconnectEvent) {
         scanUsb()
     }
 
-    public fun onEventMainThread(event: USBDataSendEvent) {
+    fun onEventMainThread(event: USBDataSendEvent) {
         katWalk.SendRawData(event.data)
     }
 
-    public fun scanUsb() {
+    fun scanUsb() {
         if (usbConnectedDevice != null) {
             disconnectDevice()
         }
@@ -154,7 +177,7 @@ class KatGatewayService : Service() {
         }
     }
 
-    public fun connectDevice(intent: Intent) {
+    fun connectDevice(intent: Intent) {
         val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
         if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
             usbConnectedDeviceConnection = usbManager.openDevice(device)
@@ -163,10 +186,10 @@ class KatGatewayService : Service() {
             }
             usbConnectedDevice = device
             Log.i("usbList", "Interface count: " + usbConnectedDevice!!.interfaceCount)
-            for (i in 0..usbConnectedDevice!!.interfaceCount-1) {
+            for (i in 0..usbConnectedDevice!!.interfaceCount - 1) {
                 usbConnectedDevice!!.getInterface(i).let { intf ->
                     Log.i("usbList", "endpoint count: " + intf.endpointCount)
-                    for (j in 0..intf.endpointCount-1) {
+                    for (j in 0..intf.endpointCount - 1) {
                         intf.getEndpoint(j).also {
                             if ((it.direction == UsbConstants.USB_DIR_OUT)) {
                                 Log.i("usbList", "OUT endpoint: " + it.toString())
@@ -174,11 +197,10 @@ class KatGatewayService : Service() {
                                     usbSendEndpoint = it
                                     usbConnectedDeviceConnection!!.claimInterface(intf, true)
                                 }
-                            }
-                            else if ((it.direction == UsbConstants.USB_DIR_IN)) {
+                            } else if ((it.direction == UsbConstants.USB_DIR_IN)) {
                                 Log.i("usbList", "IN endpoint: " + it.toString())
                                 if (usbReadEndpoint == null) {
-                                    usbReadEndpoint = it;
+                                    usbReadEndpoint = it
                                     usbConnectedDeviceConnection!!.claimInterface(intf, true)
                                 }
                             }
@@ -196,14 +218,14 @@ class KatGatewayService : Service() {
         }
     }
 
-    public fun disconnectDevice(intent: Intent) {
+    fun disconnectDevice(intent: Intent) {
         val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
         if (device?.equals(usbConnectedDevice) == true) {
             disconnectDevice()
         }
     }
 
-    public fun disconnectDevice() {
+    fun disconnectDevice() {
         if (usbConnectedDeviceConnection != null) {
             eventBus.post(KatDeviceDisconnectedEvent())
         }

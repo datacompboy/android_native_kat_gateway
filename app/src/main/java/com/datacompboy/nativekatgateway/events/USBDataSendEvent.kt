@@ -1,5 +1,3 @@
 package com.datacompboy.nativekatgateway.events
 
-class USBDataSendEvent(val data: ByteArray) {
-
-}
+class USBDataSendEvent(val data: ByteArray)

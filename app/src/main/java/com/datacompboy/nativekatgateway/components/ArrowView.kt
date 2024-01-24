@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
@@ -15,7 +14,7 @@ import com.datacompboy.nativekatgateway.R
  * TODO: document your custom view class.
  */
 class ArrowView : View {
-    private var _angleDeg: Float = 0f; // Angle of the direction, radians
+    private var _angleDeg: Float = 0f // Angle of the direction, radians
     private var _angleString: String? = null
     private var _textColor: Int = Color.RED
     private var _textSize: Float = 0f
@@ -59,21 +58,28 @@ class ArrowView : View {
         init(attrs, 0)
     }
 
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
         init(attrs, defStyle)
     }
 
     private fun init(attrs: AttributeSet?, defStyle: Int) {
         // Load attributes
         val a = context.obtainStyledAttributes(
-            attrs, R.styleable.ArrowView, defStyle, 0)
+            attrs, R.styleable.ArrowView, defStyle, 0
+        )
 
         _textColor = a.getColor(
             R.styleable.ArrowView_textColor,
-            textColor)
+            textColor
+        )
         _textSize = a.getDimension(
             R.styleable.ArrowView_textSize,
-            textSize)
+            textSize
+        )
         a.recycle()
 
 
@@ -152,10 +158,12 @@ class ArrowView : View {
 
         _angleString?.let {
             // Draw the text.
-            canvas.drawText(it,
+            canvas.drawText(
+                it,
                 paddingLeft + (contentWidth - textWidth) / 2,
                 paddingTop + (contentHeight - textHeight),
-                textPaint)
+                textPaint
+            )
         }
     }
 }

@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalStdlibApi::class)
-
 package com.datacompboy.nativekatgateway.driver
 
-import android.util.Log
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import java.util.LinkedList
@@ -14,6 +11,7 @@ enum class SENSOR {
     LEFT_FOOT,
     RIGHT_FOOT,
 }
+
 class KatWalkC2 {
     open class Sensor {
         internal var _charging: Boolean = false
@@ -34,7 +32,8 @@ class KatWalkC2 {
 
         open fun parsePacket(packet: ByteArray) {}
     }
-    class DirectionSensor: Sensor() {
+
+    class DirectionSensor : Sensor() {
         protected var _direction: Quaternion = Quaternion.identity()
         protected var _angleDeg: Float = 0f
 
@@ -66,7 +65,8 @@ class KatWalkC2 {
             direction = Quaternion(q1, q2, q3, q4)
         }
     }
-    class FootSensor: Sensor() {
+
+    class FootSensor : Sensor() {
         protected var _move_x: Float = 0f
         val move_x: Float
             get() = _move_x
@@ -120,42 +120,49 @@ class KatWalkC2 {
         var updated: SENSOR = SENSOR.NONE
         if (isKatPacket(packet)) {
             _bad_packets = 0
-            when(packet[5].toUInt()) {
+            when (packet[5].toUInt()) {
                 0x30u -> { // Streaming update
-                    when(packet[6].toInt()) {
+                    when (packet[6].toInt()) {
                         Direction._sensorId -> { // direction sensor update
                             Direction.parsePacket(packet)
                             updated = SENSOR.DIRECTION
                         }
+
                         LeftFoot._sensorId -> { // left foot update
                             LeftFoot.parsePacket(packet)
                             updated = SENSOR.LEFT_FOOT
                         }
+
                         RightFoot._sensorId -> { // right foot update
                             RightFoot.parsePacket(packet)
                             updated = SENSOR.RIGHT_FOOT
                         }
+
                         else -> {
                             // not yet got configuration update i think
                         }
                     }
                 }
+
                 0x31u -> { // Stop Read confirmation.
                     // Stop correctly handled, time to re-start.
                     // TODO: report ALL sensor gone
                     return Pair(SENSOR.NONE, KatStartStreamPacket().packet)
                 }
+
                 0x32u -> { // Sensor configuration
                     var sensor: Sensor? = null
-                    when(packet[7].toInt()) {
+                    when (packet[7].toInt()) {
                         1 -> {
                             updated = SENSOR.DIRECTION
                             sensor = Direction
                         }
+
                         2 -> {
                             updated = SENSOR.LEFT_FOOT
                             sensor = LeftFoot
                         }
+
                         3 -> {
                             updated = SENSOR.RIGHT_FOOT
                             sensor = RightFoot
@@ -163,17 +170,18 @@ class KatWalkC2 {
                         // else -> sensor = null
                     }
                     sensor?.let {
-                        Log.i("KatWalkC2", "Sensor " + updated.toString() + " / " + packet[8].toHexString(HexFormat.UpperCase))
                         it._version = packet[11].toInt()
                         it._charge = readShort(packet, 9).toFloat()
                         it._charging = (packet[8].toInt()) > 0
                         it._sensorId = packet[6].toInt()
                     }
                 }
+
                 0x33u -> {
                     // TODO()
                     // Contains charge level at least, but KatC2 Driver ignores packet...
                 }
+
                 else -> {
                     // TODO()
                     // Support other messages eventually
@@ -183,7 +191,7 @@ class KatWalkC2 {
                 return Pair(updated, _sendQueue.removeFirst().packet)
             }
         } else {
-            _bad_packets ++
+            _bad_packets++
             if (_bad_packets > 10) {
                 _bad_packets = 0
                 return Pair(updated, KatStopStreamPacket().packet)
@@ -206,8 +214,8 @@ class KatWalkC2 {
         }
     }
 
-    class KatLEDPacket: KatPacket {
-        constructor(level: Float): super() {
+    class KatLEDPacket : KatPacket {
+        constructor(level: Float) : super() {
             _packet[5] = 0xA1.toByte() // Set param
             _packet[6] = 0x01 // Led
             _packet[7] = 0x02 // Args size
@@ -215,19 +223,19 @@ class KatWalkC2 {
         }
     }
 
-    class KatStartStreamPacket: KatPacket {
-        constructor(): super() {
+    class KatStartStreamPacket : KatPacket {
+        constructor() : super() {
             _packet[5] = 0x31
         }
     }
 
-    class KatStopStreamPacket: KatPacket {
-        constructor(): super() {
+    class KatStopStreamPacket : KatPacket {
+        constructor() : super() {
             _packet[5] = 0x30
         }
     }
 
-    class KatRawDataPacket: KatPacket {
+    class KatRawDataPacket : KatPacket {
         constructor(rawpacket: ByteArray) {
             rawpacket.copyInto(_packet, 0, 0, rawpacket.size)
         }
@@ -250,6 +258,7 @@ private fun writeShortMSB(bytes: ByteArray, offset: Int, value: Int) {
     bytes[offset + 0] = ((value shr 8) and 0xFF).toByte()
     bytes[offset + 1] = (value and 0xFF).toByte()
 }
+
 private fun isKatPacket(bytes: ByteArray): Boolean {
     return (bytes[0].toUByte() == 0x1Fu.toUByte()) &&
             (bytes[1].toUByte() == 0x55u.toUByte()) &&

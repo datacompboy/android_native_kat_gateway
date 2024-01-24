@@ -56,7 +56,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:textColor="@color/light_blue_400"
-                app:textSize="10sp" />
+                app:textSize="12sp" />
 
             <com.datacompboy.nativekatgateway.components.FeetDotView
                 android:id="@+id/dotLeftFeet"
@@ -65,7 +65,7 @@
                 android:layout_weight="1"
                 app:text="Left Feet"
                 app:textColor="@color/light_blue_400"
-                app:textSize="10sp" />
+                app:textSize="12sp" />
 
             <com.datacompboy.nativekatgateway.components.FeetDotView
                 android:id="@+id/dotRightFeet"
@@ -74,7 +74,7 @@
                 android:layout_weight="1"
                 app:text="Right Feet"
                 app:textColor="@color/light_blue_400"
-                app:textSize="10sp" />
+                app:textSize="12sp" />
 
         </LinearLayout>
 

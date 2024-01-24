@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
@@ -58,9 +57,9 @@ class FeetDotView : View {
             invalidateTextPaintAndMeasurements()
         }
 
-    public fun addCoord(x: Float, y: Float, depth: Float, ground: Boolean) {
-        _coord_x = x;
-        _coord_y = y;
+    fun addCoord(x: Float, y: Float, depth: Float, ground: Boolean) {
+        _coord_x = x
+        _coord_y = y
         _coord_depth = depth
         _coord_ground = ground
         invalidate()
@@ -146,7 +145,7 @@ class FeetDotView : View {
             )
         }
 
-        text?.let {
+        text.let {
             // Draw the text.
             canvas.drawText(
                 it,
