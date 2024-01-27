@@ -9,6 +9,7 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import com.datacompboy.nativekatgateway.R
+import kotlin.math.min
 
 /**
  * TODO: document your custom view class.
@@ -117,40 +118,28 @@ class ArrowView : View {
         val contentWidth = width - paddingLeft - paddingRight
         val contentHeight = height - paddingTop - paddingBottom
 
+        val arrowLen = min(contentWidth, contentHeight) * 9 / 10
+
         canvas.save()
-        canvas.rotate(_angleDeg, contentWidth / 2.0f, contentHeight / 2.0f)
+        canvas.translate(paddingLeft + contentWidth / 2.0f, paddingTop + contentHeight / 2.0f)
+        canvas.rotate(_angleDeg, 0f, 0f)
         //
         canvas.drawRect(
-            Rect(
-                contentWidth / 2 - 10,
-                contentHeight / 10,
-                contentWidth / 2 + 10,
-                9 * contentHeight / 10
-            ),
+            Rect(-10, -(arrowLen / 2), +10, +(arrowLen / 2)),
             textPaint
         )
         //
         canvas.save()
-        canvas.rotate(-15.0f, contentWidth / 2.0f, contentHeight / 10f)
+        canvas.rotate(-15.0f, 0f, -arrowLen/2.0f)
         canvas.drawRect(
-            Rect(
-                contentWidth / 2 - 10,
-                contentHeight / 10,
-                contentWidth / 2 + 10,
-                contentHeight / 10 + contentHeight / 7
-            ),
+            Rect(-10, -(arrowLen / 2), +10, -(arrowLen / 2) + (arrowLen / 7)),
             textPaint
         )
         canvas.restore()
 
-        canvas.rotate(+15.0f, contentWidth / 2.0f, contentHeight / 10f)
+        canvas.rotate(+15.0f, 0f, -arrowLen/2.0f)
         canvas.drawRect(
-            Rect(
-                contentWidth / 2 - 10,
-                contentHeight / 10,
-                contentWidth / 2 + 10,
-                contentHeight / 10 + contentHeight / 7
-            ),
+            Rect(-10, -(arrowLen / 2), +10, -(arrowLen / 2) + (arrowLen / 7)),
             textPaint
         )
 

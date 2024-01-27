@@ -17,6 +17,8 @@ class FeetDotView : View {
     private var _textColor: Int = Color.RED // TODO: use a default from R.color...
     private var _textSize: Float = 0f // TODO: use a default from R.dimen...
 
+    private var _scale = 14f // X/Y multiplier to fit into dot view
+
     private var _coord_x: Float = 0f
     private var _coord_y: Float = 0f
     private var _coord_depth: Float = 0f
@@ -130,16 +132,16 @@ class FeetDotView : View {
         if (_coord_ground) {
             pointPaint.alpha = (256 * (_coord_depth)).toInt()
             canvas.drawCircle(
-                paddingLeft + contentWidth / 2 + contentWidth * _coord_x,
-                paddingTop + contentHeight / 2 + contentHeight * _coord_y,
+                paddingLeft + contentWidth / 2 + contentWidth * _coord_x * _scale,
+                paddingTop + contentHeight / 2 + contentHeight * _coord_y * _scale,
                 10f,
                 pointPaint
             )
         } else {
             pointPaint.alpha = 256
             canvas.drawCircle(
-                paddingLeft + contentWidth / 2 + contentWidth * _coord_x,
-                paddingTop + contentHeight / 2 + contentHeight * _coord_y,
+                paddingLeft + contentWidth / 2 + contentWidth * _coord_x * _scale,
+                paddingTop + contentHeight / 2 + contentHeight * _coord_y * _scale,
                 5f,
                 pointPaint
             )
