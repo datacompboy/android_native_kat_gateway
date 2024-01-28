@@ -1,9 +1,11 @@
 package com.datacompboy.nativekatgateway.driver
 
+import android.util.Log
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import java.util.LinkedList
 import kotlin.math.acos
+import kotlin.math.sqrt
 
 enum class SENSOR {
     NONE,
@@ -51,18 +53,23 @@ class KatWalkC2 {
             get() = _angleDeg
 
         override fun parsePacket(packet: ByteArray) {
-            val fix14 = 0.00006103515f // 2^-14 for quaternion conversion
-            val q1: Float = readShort(packet, 7) * fix14
-            val q2: Float = readShort(packet, 9) * fix14
-            val q3: Float = readShort(packet, 11) * fix14
-            val q4: Float = readShort(packet, 13) * fix14
+            val m15 = 0.00003051757813f // 2^-15 for quaternion conversion
+            val q1 = readShort(packet, 7)
+            val q2 = readShort(packet, 9)
+            val q3 = readShort(packet, 11)
+            val q4 = readShort(packet, 13)
+            direction = Quaternion(
+                (+ q1 - q2 - q3 + q4) * m15,
+                (- q1 - q2 + q3 + q4) * m15,
+                (+ q1 + q2 + q3 + q4) * m15,
+                (+ q1 - q2 + q3 - q4) * m15
+            )
             /*
 			float fix8 = 0.00390625F; // 2^-8 for three more vars, always zero
 			float v1 = readShort(packet, 15) * fix8;
 			float v2 = readShort(packet, 17) * fix8;
 			float v3 = readShort(packet, 19) * fix8;
 			*/
-            direction = Quaternion(q1, q2, q3, q4)
         }
     }
 
@@ -84,8 +91,8 @@ class KatWalkC2 {
             get() = _ground
 
         override fun parsePacket(packet: ByteArray) {
-            _move_x = readShort(packet, 21) / 4200.0f //59055.117f;
-            _move_y = readShort(packet, 23) / 4200.0f //59055.117f;
+            _move_x = readShort(packet, 21) / 59055.117f;
+            _move_y = readShort(packet, 23) / 59055.117f;
             // something = readShort(bytes, 9);
             _shade = packet[26].toInt() / 127f
             _ground = (packet[9] == 0.toByte())
