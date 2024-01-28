@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
 import android.text.TextPaint
 import android.util.AttributeSet
@@ -123,26 +124,16 @@ class ArrowView : View {
         canvas.save()
         canvas.translate(paddingLeft + contentWidth / 2.0f, paddingTop + contentHeight / 2.0f)
         canvas.rotate(_angleDeg, 0f, 0f)
-        //
         canvas.drawRect(
             Rect(-10, -(arrowLen / 2), +10, +(arrowLen / 2)),
             textPaint
         )
-        //
-        canvas.save()
-        canvas.rotate(-15.0f, 0f, -arrowLen/2.0f)
-        canvas.drawRect(
-            Rect(-10, -(arrowLen / 2), +10, -(arrowLen / 2) + (arrowLen / 7)),
-            textPaint
-        )
-        canvas.restore()
-
-        canvas.rotate(+15.0f, 0f, -arrowLen/2.0f)
-        canvas.drawRect(
-            Rect(-10, -(arrowLen / 2), +10, -(arrowLen / 2) + (arrowLen / 7)),
-            textPaint
-        )
-
+        canvas.drawPath(Path().apply {
+            moveTo(0f, -(arrowLen/2f)-15f)
+            lineTo(30f, -(arrowLen/2f)+35f)
+            lineTo(-30f, -(arrowLen/2f)+35f)
+            close()
+        }, textPaint)
         canvas.restore()
 
         _angleString?.let {
