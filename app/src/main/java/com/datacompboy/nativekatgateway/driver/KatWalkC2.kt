@@ -35,6 +35,7 @@ class KatWalkC2 {
     class DirectionSensor : Sensor() {
         protected var _direction: Quaternion = Quaternion.identity()
         protected var _angleDeg: Float = 0f
+        protected var _angleZero: Float = 0f
 
         var direction: Quaternion
             get() = _direction
@@ -45,7 +46,17 @@ class KatWalkC2 {
             }
 
         val angleDeg: Float
-            get() = _angleDeg
+            get() = normalAngle(_angleDeg - _angleZero)
+
+        fun normalAngle(x: Float): Float {
+            if (x > 360) {
+                return x - 360
+            }
+            if (x < 0) {
+                return x + 360
+            }
+            return x
+        }
 
         override fun parsePacket(packet: ByteArray) {
             val m15 = 0.000030517578125f // 2^-15 for quaternion conversion
@@ -59,6 +70,9 @@ class KatWalkC2 {
                 (+ q1 + q2 + q3 + q4) * m15,
                 (+ q1 - q2 + q3 - q4) * m15
             ).normalized()
+            if (packet[25].toInt() < 0) {
+                _angleZero = _angleDeg
+            }
             /*
 			float fix8 = 0.00390625F; // 2^-8 for three more vars, always zero
 			float v1 = readShort(packet, 15) * fix8;
