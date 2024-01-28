@@ -53,7 +53,7 @@ class KatWalkC2 {
             get() = _angleDeg
 
         override fun parsePacket(packet: ByteArray) {
-            val m15 = 0.00003051757813f // 2^-15 for quaternion conversion
+            val m15 = 0.000030517578125f // 2^-15 for quaternion conversion
             val q1 = readShort(packet, 7)
             val q2 = readShort(packet, 9)
             val q3 = readShort(packet, 11)
