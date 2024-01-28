@@ -23,7 +23,9 @@ import com.datacompboy.nativekatgateway.events.KatSensorChangeEvent
 import com.datacompboy.nativekatgateway.events.KatSetLedEvent
 import com.datacompboy.nativekatgateway.events.USBDataSendEvent
 import com.datacompboy.nativekatgateway.events.USBReconnectEvent
-import de.greenrobot.event.EventBus
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import kotlin.concurrent.Volatile
 
 class KatGatewayService : Service() {
@@ -151,17 +153,20 @@ class KatGatewayService : Service() {
         }
     }
 
-    fun onEventMainThread(event: KatSetLedEvent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onKatSetLedEvent(event: KatSetLedEvent) {
         katWalk.SetLEDLevel(event.level)
     }
 
 
     @Suppress("UNUSED_PARAMETER")
-    fun onEventMainThread(event: USBReconnectEvent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onUSBReconnectEvent(event: USBReconnectEvent) {
         scanUsb()
     }
 
-    fun onEventMainThread(event: USBDataSendEvent) {
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    fun onUSBDataSendEvent(event: USBDataSendEvent) {
         katWalk.SendRawData(event.data)
     }
 

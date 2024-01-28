@@ -15,7 +15,9 @@ import com.datacompboy.nativekatgateway.events.KatDeviceDisconnectedEvent
 import com.datacompboy.nativekatgateway.events.KatSensorChangeEvent
 import com.datacompboy.nativekatgateway.events.KatSetLedEvent
 import com.datacompboy.nativekatgateway.events.USBReconnectEvent
-import de.greenrobot.event.EventBus
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var textMessage: TextView
@@ -56,7 +58,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         this.dotRightFeet = findViewById(R.id.dotRightFeet)
     }
 
-    fun onEventMainThread(event: KatSensorChangeEvent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onKatSensorChangeEvent(event: KatSensorChangeEvent) {
         when (event.katSENSOR) {
             SENSOR.DIRECTION -> event.katWalk.Direction.let {
                 this.arrKatDirection.angleDeg = it.angleDeg
@@ -75,12 +78,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun onEventMainThread(event: KatDeviceConnectedEvent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onKatDeviceConnectedEvent(event: KatDeviceConnectedEvent) {
         this.textMessage.text = "Connected :)"
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun onEventMainThread(event: KatDeviceDisconnectedEvent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onKatDeviceDisconnectedEvent(event: KatDeviceDisconnectedEvent) {
         this.textMessage.text = "Disconnected :("
     }
 
