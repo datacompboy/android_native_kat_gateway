@@ -95,6 +95,7 @@ class ArrowView : View {
         invalidateTextPaintAndMeasurements()
     }
 
+
     private fun invalidateTextPaintAndMeasurements() {
         textPaint.let {
             it.textSize = textSize

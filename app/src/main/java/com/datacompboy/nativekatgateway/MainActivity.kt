@@ -93,19 +93,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if (v == btnReconnect) {
             this.textMessage.text = "Reconnecting..."
             eventBus.post(USBReconnectEvent())
-            //this.katConnector.TryConnect(this, null)
         } else if (v == btnLedON) {
             this.textMessage.text = "Let be light!"
-            /*eventBus.post(
-                USBDataSendEvent(byteArrayOf(0x1F,0x55,
-                0xAA.toByte(),0x00,0x00, 0xA1.toByte(),0x01,0x02,0x03, 0x8F.toByte()
-            ))
-            )*/
             eventBus.post(KatSetLedEvent(1.0f))
         } else if (v == btnLedOFF) {
             this.textMessage.text = "Shut the lights off!"
-            /*eventBus.post(USBDataSendEvent(byteArrayOf(0x1F,0x55, 0xAA.toByte(),0x00,0x00,
-                0xA1.toByte(),0x01,0x02,0x00,0x00)))*/
             eventBus.post(KatSetLedEvent(0.0f))
         }
     }

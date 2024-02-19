@@ -103,33 +103,31 @@ class KatGatewayService : Service() {
                     if (result.first != SENSOR.NONE) {
                         eventBus.post(KatSensorChangeEvent(result.first, katWalk))
                     }
-                } else
-                    if (status == -1) // Stream communication not yet enabled?
-                    {
-                        val status: Int = usbConnectedDeviceConnection!!.controlTransfer(
-                            0xA0,
-                            0x01,
-                            0x02,
-                            0x00,
-                            buffer,
-                            buffer.size,
-                            100
-                        )
-                        if (status > 0) {
-                            // Log.i("KatGatewayUsbThread", "Recv2: " + status + " // " + buffer.toHexString(HexFormat.UpperCase) )
-                            val result = katWalk.HandlePacket(buffer)
-                            result.second?.let {
-                                val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(
-                                    usbSendEndpoint,
-                                    it,
-                                    it.size,
-                                    100
-                                )
+                } else if (status == -1) {// Stream communication not yet enabled?
+                    val status: Int = usbConnectedDeviceConnection!!.controlTransfer(
+                        0xA0,
+                        0x01,
+                        0x02,
+                        0x00,
+                        buffer,
+                        buffer.size,
+                        100
+                    )
+                    if (status > 0) {
+                        // Log.i("KatGatewayUsbThread", "Recv2: " + status + " // " + buffer.toHexString(HexFormat.UpperCase) )
+                        val result = katWalk.HandlePacket(buffer, true)
+                        result.second?.let {
+                            val sendStatus = usbConnectedDeviceConnection!!.bulkTransfer(
+                                usbSendEndpoint,
+                                it,
+                                it.size,
+                                100
+                            )
 //                             Log.i("KatGatewayUsbThread", "Send2: " + sendStatus + " // " + it.toHexString(HexFormat.UpperCase) )
-                                // TODO: track success / send success to katWalk?
-                            }
+                            // TODO: track success / send success to katWalk?
                         }
                     }
+                }
             }
         }
 
@@ -175,7 +173,7 @@ class KatGatewayService : Service() {
             disconnectDevice()
         }
         usbManager.deviceList.values.forEach {
-            if (it.vendorId == 0xC4F4 && it.productId == 0x2F37) {
+            if (it.vendorId == 0xC4F4 && (it.productId == 0x2F37 || it.productId == 0x3F37)) {
                 usbManager.requestPermission(it, permissionIntent)
                 return@forEach
             }

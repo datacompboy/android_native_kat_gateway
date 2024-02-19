@@ -1,7 +1,9 @@
 package com.datacompboy.nativekatgateway.driver
 
+import android.util.Log
 import com.google.ar.sceneform.math.Quaternion
 import java.util.LinkedList
+import kotlin.math.abs
 import kotlin.math.atan2
 
 enum class SENSOR {
@@ -49,11 +51,11 @@ class KatWalkC2 {
             get() = normalAngle(_angleDeg - _angleZero)
 
         fun normalAngle(x: Float): Float {
-            if (x > 360) {
-                return x - 360
+            if (x > 360f) {
+                return x - 360f
             }
-            if (x < 0) {
-                return x + 360
+            if (x < 0f) {
+                return x + 360f
             }
             return x
         }
@@ -121,8 +123,16 @@ class KatWalkC2 {
         _sendQueue.addLast(KatStopStreamPacket())
     }
 
+    fun GetStopStream(): ByteArray {
+        return KatStopStreamPacket().packet
+    }
+
     fun StartStream() {
         _sendQueue.addLast(KatStartStreamPacket())
+    }
+
+    fun GetStartStream(): ByteArray {
+        return KatStartStreamPacket().packet
     }
 
     fun SendRawData(data: ByteArray) {
@@ -132,9 +142,11 @@ class KatWalkC2 {
     // Low level protocol
     private var _bad_packets = 0
     private val _sendQueue = LinkedList<KatPacket>()
-    fun HandlePacket(packet: ByteArray): Pair<SENSOR, ByteArray?> {
+    @OptIn(ExperimentalStdlibApi::class)
+    fun HandlePacket(packet: ByteArray, isControl: Boolean = false): Pair<SENSOR, ByteArray?> {
         var updated: SENSOR = SENSOR.NONE
         if (isKatPacket(packet)) {
+            // Log.i("HandlePacket", packet.toHexString(HexFormat.UpperCase) + " / " + isControl)
             _bad_packets = 0
             when (packet[5].toUInt()) {
                 0x30u -> { // Streaming update
@@ -208,9 +220,30 @@ class KatWalkC2 {
             }
         } else {
             _bad_packets++
-            if (_bad_packets > 10) {
+            Log.i("HandlePacket", packet.toHexString(HexFormat.UpperCase) + " / " + isControl)
+
+            // Try packet recovery:
+            //    If we got formed packet but mis-aligned signature, then send reset immediately
+            if (packet.size == 32 && packet[0].toUByte() == 0x1Fu.toUByte()) {
+                var p = packet[31].toUByte()
+                for (i in 1..31) {
+                    val n = packet[i].toUByte()
+                    if (p == 0x55u.toUByte() && n == 0xAAu.toUByte()) {
+                        return Pair(updated, KatStopStreamPacket().packet) // KatStartStreamPacket().packet)
+                    }
+                    p = n
+                }
+            }
+
+            if (_bad_packets % 2 == 1 && _sendQueue.isNotEmpty()) {
+                Log.i("HandlePacket", "Send cmd in meanwhile")
+                return Pair(updated, _sendQueue.removeFirst().packet)
+            }
+
+            if (_bad_packets > 5) {
                 _bad_packets = 0
-                return Pair(updated, KatStopStreamPacket().packet)
+                Log.i("HandlePacket", "Send start stream")
+                return Pair(updated, KatStartStreamPacket().packet)
             }
         }
         return Pair(updated, null)
@@ -241,13 +274,13 @@ class KatWalkC2 {
 
     class KatStartStreamPacket : KatPacket {
         constructor() : super() {
-            _packet[5] = 0x31
+            _packet[5] = 0x30
         }
     }
 
     class KatStopStreamPacket : KatPacket {
         constructor() : super() {
-            _packet[5] = 0x30
+            _packet[5] = 0x31
         }
     }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- in hex: USB\VID_C4F4&PID_8F37 = C2+ Seat Position Receiver -->
-    <!-- <usb-device vendor-id="50420" product-id="36663" /> -->
-    <!-- in hex: USB\VID_C4F4&PID_2F37 = C2+ main receiver -->
+    <!-- in hex: USB\VID_C4F4&PID_3F37 = C2 Core Receiver -->
+    <usb-device vendor-id="50420" product-id="16183" />
+    <!-- in hex: USB\VID_C4F4&PID_2F37 = C2/C2+ Receiver -->
     <usb-device vendor-id="50420" product-id="12087" />
 </resources>
